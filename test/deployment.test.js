@@ -16,19 +16,34 @@ test('Vercel routes the static campaign and same-origin API gateway', () => {
   assert.equal(manifest.runtimeVersion, 'V8');
 });
 
-test('public form collects address, uses the fixed tree pledge, and accurately discloses Sheet access', () => {
+test('public form collects address, supports other-area detail, uses the fixed tree pledge, and accurately discloses Sheet access', () => {
   assert.equal(fs.existsSync(new URL('public/admin.html', root)), false);
   assert.equal(fs.existsSync(new URL('public/admin.js', root)), false);
   const publicHtml = fs.readFileSync(new URL('public/index.html', root), 'utf8');
   const publicJs = fs.readFileSync(new URL('public/app.js', root), 'utf8');
 
   assert.match(publicHtml, /name="addressDetail"[^>]*required[^>]*maxlength="220"/i);
+  assert.match(publicHtml, /name="otherLocality"[^>]*maxlength="60"/i);
   assert.match(publicHtml, /I pledge to plant and nurture one tree\./i);
   assert.doesNotMatch(publicHtml, /id="pledge-options"|name="pledgeId"/i);
-  assert.match(publicJs, /addressDetail:\s*data\.get\('addressDetail'\)/);
+  assert.match(publicJs, /data\.get\('otherLocality'\)/);
+  assert.match(publicJs, /localityId === 'other-madurai-area'/);
   assert.match(publicJs, /pledgeId:\s*'plant-tree'/);
-  assert.match(publicHtml, /anyone who obtains the Sheet link can view/i);
+  assert.match(publicHtml, /I consent to Young Indians storing my name, mobile number, address, locality for this campaign/i);
+  assert.doesNotMatch(publicHtml, /tree pledge in the campaign Google Sheet/i);
+  assert.match(publicHtml, /Anyone who obtains the campaign Google Sheet link can view submitted details/i);
   assert.doesNotMatch(publicHtml, /Your details stay private|mobile number will not be shown publicly/i);
+});
+
+test('public page includes terms, privacy details, and Straw Labs attribution', () => {
+  const publicHtml = fs.readFileSync(new URL('public/index.html', root), 'utf8');
+
+  assert.match(publicHtml, /<section class="legal-section" id="terms"/i);
+  assert.match(publicHtml, /<section class="legal-section" id="privacy"/i);
+  assert.match(publicHtml, /Terms &amp; Conditions|Terms and Conditions/i);
+  assert.match(publicHtml, /Privacy Policy/i);
+  assert.match(publicHtml, /Powered by Straw Labs/i);
+  assert.match(publicHtml, /strawlabs-mark/i);
 });
 
 test('certificate uses browser-held participant details without server identifiers', () => {
@@ -37,7 +52,7 @@ test('certificate uses browser-held participant details without server identifie
 
   assert.doesNotMatch(publicJs, /result\.(?:certificateId|participant|submittedAt)/);
   assert.match(publicJs, /name:\s*String\(data\.get\('name'\)\)\.trim\(\)/);
-  assert.match(publicJs, /locality:\s*locality\.name/);
+  assert.match(publicJs, /locality:\s*localityName/);
   assert.doesNotMatch(publicHtml, /Certificate ID:/i);
   assert.doesNotMatch(publicJs, /Certificate ID:/i);
 });

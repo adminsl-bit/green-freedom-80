@@ -2,6 +2,8 @@ const state = { config: null, dashboard: null, trees: [], latest: null };
 const form = document.querySelector('#pledge-form');
 const errorBox = document.querySelector('#form-error');
 const dialog = document.querySelector('#success-dialog');
+const treeStatus = document.querySelector('#tree-status');
+const otherLocalityField = document.querySelector('#other-locality-field');
 
 async function api(path, options) {
   const response = await fetch(path, options);
@@ -19,9 +21,28 @@ function treeNode(tree, isNew = false) {
   return group;
 }
 
-function renderMap(trees, latestTree) {
+function renderMap(trees, latest = state.latest) {
   const layer = document.querySelector('#trees-layer');
-  layer.replaceChildren(...trees.map((tree) => treeNode(tree, tree === latestTree)));
+  const latestTree = latest?.tree;
+  const nodes = trees.map((tree) => treeNode(tree, tree === latestTree));
+  if (latestTree && latest?.participant) {
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('class', 'tree-callout');
+    text.setAttribute('x', Math.min(88, latestTree.x + 3));
+    text.setAttribute('y', Math.max(8, latestTree.y - 3));
+    text.textContent = latest.participant.locality;
+    nodes.push(text);
+  }
+  layer.replaceChildren(...nodes);
+}
+
+function renderTreeStatus() {
+  if (!treeStatus) return;
+  if (!state.latest?.participant) {
+    treeStatus.textContent = 'Choose your locality and take the pledge to see your latest tree on the map.';
+    return;
+  }
+  treeStatus.textContent = `${state.latest.participant.name} added a digital tree for ${state.latest.participant.locality}.`;
 }
 
 function renderLabels() {
@@ -61,6 +82,13 @@ function populateForm() {
   for (const locality of state.config.localities) {
     localitySelect.add(new Option(locality.name, locality.id));
   }
+}
+
+function toggleOtherLocalityField() {
+  const showingOther = form.elements.localityId.value === 'other-madurai-area';
+  otherLocalityField.hidden = !showingOther;
+  form.elements.otherLocality.required = showingOther;
+  if (!showingOther) form.elements.otherLocality.value = '';
 }
 
 function drawCertificate(participant) {
@@ -127,29 +155,43 @@ form.addEventListener('submit', async (event) => {
   button.firstChild.textContent = 'Recording your pledge… ';
   const data = new FormData(form);
   try {
+    const localityId = String(data.get('localityId') || '');
+    const locality = state.config.localities.find((item) => item.id === localityId);
+    const otherLocality = String(data.get('otherLocality') || '').trim().replace(/\s+/g, ' ');
+    const addressDetail = String(data.get('addressDetail') || '').trim().replace(/\s+/g, ' ');
+    const localityName = localityId === 'other-madurai-area' && otherLocality ? otherLocality : locality?.name;
+    const storedAddressDetail = localityId === 'other-madurai-area' && otherLocality
+      ? `${otherLocality} — ${addressDetail}`
+      : addressDetail;
+    if (localityId === 'other-madurai-area' && !otherLocality) {
+      throw new Error('Please enter your area name if you choose Other Madurai area.');
+    }
+    if (storedAddressDetail.length > 220) {
+      throw new Error('Please shorten the area name or address so the details fit within 220 characters.');
+    }
     const result = await api('/api/pledges', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: data.get('name'), phone: data.get('phone'), localityId: data.get('localityId'),
-        addressDetail: data.get('addressDetail'), pledgeId: 'plant-tree', consent: data.get('consent') === 'on',
+        name: data.get('name'), phone: data.get('phone'), localityId,
+        addressDetail: storedAddressDetail, pledgeId: 'plant-tree', consent: data.get('consent') === 'on',
         source: new URLSearchParams(location.search).get('utm_source') || 'direct'
       })
     });
-    const locality = state.config.localities.find((item) => item.id === data.get('localityId'));
     const pledge = state.config.pledges.find((item) => item.id === 'plant-tree');
     const participant = {
       name: String(data.get('name')).trim(),
-      locality: locality.name,
+      locality: localityName,
       pledgeId: pledge.id,
       pledge: pledge.text,
       submittedAt: new Date().toISOString()
     };
-    state.latest = { participant };
-    renderDashboard(result.impact);
     const latestTree = { ...result.tree };
+    state.latest = { participant, tree: latestTree };
+    renderDashboard(result.impact);
     state.trees.push(latestTree);
-    renderMap(state.trees, latestTree);
+    renderMap(state.trees);
+    renderTreeStatus();
     drawCertificate(participant);
     document.querySelector('#certificate-id').textContent = 'Personalized digital tree certificate';
     dialog.showModal();
@@ -164,6 +206,7 @@ form.addEventListener('submit', async (event) => {
   }
 });
 
+form.elements.localityId.addEventListener('change', toggleOtherLocalityField);
 document.querySelector('.dialog-close').addEventListener('click', () => dialog.close());
 dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
 document.querySelector('#download-certificate').addEventListener('click', async () => {
@@ -187,7 +230,7 @@ async function init() {
   try {
     const [config, dashboard, trees] = await Promise.all([api('/api/config'), api('/api/dashboard'), api('/api/trees')]);
     state.config = config; state.trees = trees.trees;
-    populateForm(); renderLabels(); renderDashboard(dashboard); renderMap(state.trees);
+    populateForm(); toggleOtherLocalityField(); renderLabels(); renderDashboard(dashboard); renderMap(state.trees); renderTreeStatus();
   } catch {
     toast('Live impact is temporarily unavailable');
   }

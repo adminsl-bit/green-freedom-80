@@ -4,6 +4,12 @@ const errorBox = document.querySelector('#form-error');
 const dialog = document.querySelector('#success-dialog');
 const treeStatus = document.querySelector('#tree-status');
 const otherLocalityField = document.querySelector('#other-locality-field');
+const journeySteps = [...document.querySelectorAll('[data-journey-step]')];
+const journeyProgress = document.querySelector('#journey-progress');
+const journeyVisualTitle = document.querySelector('#journey-visual-title');
+const journeyVisualCopy = document.querySelector('#journey-visual-copy');
+const journeyProgressLabel = document.querySelector('#journey-progress-label');
+const journeyScenes = [...document.querySelectorAll('.journey-scene')];
 
 async function api(path, options) {
   const response = await fetch(path, options);
@@ -12,25 +18,126 @@ async function api(path, options) {
   return body;
 }
 
-function treeNode(tree, isNew = false) {
+function countsByLocality() {
+  return state.trees.reduce((counts, tree) => {
+    counts.set(tree.localityId, (counts.get(tree.localityId) || 0) + 1);
+    return counts;
+  }, new Map());
+}
+
+function summarizeActiveLocalities() {
+  const configById = new Map((state.config?.localities || []).map((locality) => [locality.id, locality]));
+  const counts = countsByLocality();
+  return [...counts.entries()]
+    .map(([localityId, count]) => ({ localityId, count, locality: configById.get(localityId) }))
+    .filter((entry) => entry.locality)
+    .sort((left, right) => right.count - left.count || left.locality.name.localeCompare(right.locality.name));
+}
+
+function renderMapSummary() {
+  const summary = document.querySelector('#map-summary');
+  if (!summary) return;
+  const hotspots = summarizeActiveLocalities();
+  if (!hotspots.length) {
+    summary.textContent = 'Waiting for the first pledge to activate Madurai’s digital map.';
+    return;
+  }
+  const top = hotspots[0];
+  summary.textContent = `${hotspots.length} active localities are visible right now. ${top.locality.name} currently leads with ${top.count} digital ${top.count === 1 ? 'tree' : 'trees'}.`;
+}
+
+function renderParticipationHotspots() {
+  const list = document.querySelector('#participation-hotspots');
+  if (!list) return;
+  const hotspots = summarizeActiveLocalities().slice(0, 5);
+  if (!hotspots.length) {
+    list.innerHTML = '<li class="empty-state">New hotspots appear here as registrations come in.</li>';
+    return;
+  }
+  list.replaceChildren(...hotspots.map((entry, index) => {
+    const item = document.createElement('li');
+    item.innerHTML = `<span class="hotspot-rank">${index + 1}</span><span class="hotspot-copy"><strong></strong><small></small></span><span class="hotspot-count"></span>`;
+    item.querySelector('strong').textContent = entry.locality.name;
+    item.querySelector('small').textContent = entry.count === 1 ? '1 digital tree visible here' : `${entry.count} digital trees visible here`;
+    item.querySelector('.hotspot-count').textContent = `${entry.count}×`;
+    return item;
+  }));
+}
+
+function renderLabels() {
+  const labels = document.querySelector('#locality-labels');
+  const featured = new Set(['anna-nagar', 'teppakulam', 'simmakkal', 'thirunagar', 'mattuthavani', 'avaniyapuram']);
+  for (const localityId of state.dashboard?.areaParticipation?.map((area) => area.localityId) ?? []) {
+    featured.add(localityId);
+  }
+  for (const localityId of state.trees.map((tree) => tree.localityId)) {
+    featured.add(localityId);
+  }
+  labels.replaceChildren(...state.config.localities.filter((place) => featured.has(place.id)).map((place) => {
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('class', 'locality-label');
+    text.setAttribute('x', place.x);
+    text.setAttribute('y', place.y - 4.2);
+    text.textContent = place.name;
+    return text;
+  }));
+}
+
+function buildHotspotNode(tree, activeCount, isLatest = false) {
   const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  group.setAttribute('class', `tree-marker${isNew ? ' new' : ''}`);
+  group.setAttribute('class', 'tree-hotspot');
   group.setAttribute('transform', `translate(${tree.x} ${tree.y})`);
   group.setAttribute('aria-hidden', 'true');
-  group.innerHTML = '<line class="trunk" x1="0" y1="1" x2="0" y2="4"/><circle class="crown" cx="0" cy="0" r="2.15"/><circle class="crown" cx="-1.4" cy=".5" r="1.35"/><circle class="crown" cx="1.4" cy=".5" r="1.35"/>';
+
+  const glow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  glow.setAttribute('class', `tree-glow${isLatest ? ' is-latest' : ''}`);
+  glow.setAttribute('r', String(Math.min(7.6, 2.6 + activeCount * 0.45)));
+  group.appendChild(glow);
+
+  const core = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  core.setAttribute('class', `tree-core${isLatest ? ' is-latest' : ''}`);
+  core.setAttribute('r', String(Math.min(3.4, 1.45 + activeCount * 0.14)));
+  group.appendChild(core);
+
+  const badge = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  badge.setAttribute('class', 'tree-badge');
+  badge.setAttribute('x', '-2.8');
+  badge.setAttribute('y', '-8');
+  badge.setAttribute('rx', '2');
+  badge.setAttribute('ry', '2');
+  badge.setAttribute('width', '5.6');
+  badge.setAttribute('height', '3.7');
+  group.appendChild(badge);
+
+  const countText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  countText.setAttribute('class', 'tree-count');
+  countText.setAttribute('x', '0');
+  countText.setAttribute('y', '-6.13');
+  countText.textContent = String(activeCount);
+  group.appendChild(countText);
+
   return group;
 }
 
 function renderMap(trees, latest = state.latest) {
   const layer = document.querySelector('#trees-layer');
   const latestTree = latest?.tree;
-  const nodes = trees.map((tree) => treeNode(tree, tree === latestTree));
+  const nodes = [];
+  const rendered = new Set();
+  const localityCounts = countsByLocality();
+  for (const tree of trees) {
+    if (rendered.has(tree.localityId)) continue;
+    rendered.add(tree.localityId);
+    const activeCount = localityCounts.get(tree.localityId) || 1;
+    const isLatest = latestTree?.localityId === tree.localityId;
+    nodes.push(buildHotspotNode(tree, activeCount, isLatest));
+  }
   if (latestTree && latest?.participant) {
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     text.setAttribute('class', 'tree-callout');
-    text.setAttribute('x', Math.min(88, latestTree.x + 3));
-    text.setAttribute('y', Math.max(8, latestTree.y - 3));
-    text.textContent = latest.participant.locality;
+    text.setAttribute('x', Math.min(88, latestTree.x + 4.4));
+    text.setAttribute('y', Math.max(8, latestTree.y - 5));
+    text.textContent = `${latest.participant.locality} just grew`;
     nodes.push(text);
   }
   layer.replaceChildren(...nodes);
@@ -42,24 +149,12 @@ function renderTreeStatus() {
     treeStatus.textContent = 'Choose your locality and take the pledge to see your latest tree on the map.';
     return;
   }
-  treeStatus.textContent = `${state.latest.participant.name} added a digital tree for ${state.latest.participant.locality}.`;
-}
-
-function renderLabels() {
-  const labels = document.querySelector('#locality-labels');
-  const featured = new Set(['anna-nagar', 'teppakulam', 'simmakkal', 'thirunagar', 'mattuthavani', 'avaniyapuram']);
-  labels.replaceChildren(...state.config.localities.filter((place) => featured.has(place.id)).map((place) => {
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('class', 'locality-label');
-    text.setAttribute('x', place.x);
-    text.setAttribute('y', place.y - 3.2);
-    text.textContent = place.name;
-    return text;
-  }));
+  treeStatus.textContent = `${state.latest.participant.name} activated ${state.latest.participant.locality} on the digital map. Their locality hotspot will keep growing as more people from that area register.`;
 }
 
 function renderDashboard(dashboard) {
   state.dashboard = dashboard;
+  renderLabels();
   document.querySelector('#total-pledges').textContent = dashboard.totalPledges.toLocaleString('en-IN');
   document.querySelector('#total-trees').textContent = dashboard.totalDigitalTrees.toLocaleString('en-IN');
   document.querySelector('#active-areas').textContent = dashboard.areaParticipation.length.toLocaleString('en-IN');
@@ -67,6 +162,8 @@ function renderDashboard(dashboard) {
   const list = document.querySelector('#leaderboard');
   if (!dashboard.topLocalities.length) {
     list.innerHTML = '<li class="empty-state">The first locality is waiting to grow.</li>';
+    renderMapSummary();
+    renderParticipationHotspots();
     return;
   }
   list.replaceChildren(...dashboard.topLocalities.map((area, index) => {
@@ -75,6 +172,8 @@ function renderDashboard(dashboard) {
     item.querySelector('strong').textContent = area.locality;
     return item;
   }));
+  renderMapSummary();
+  renderParticipationHotspots();
 }
 
 function populateForm() {
@@ -146,6 +245,34 @@ function toast(message) {
   setTimeout(() => element.classList.remove('show'), 2400);
 }
 
+function clearToast() {
+  const element = document.querySelector('#toast');
+  element.textContent = '';
+  element.classList.remove('show');
+}
+
+function activateJourneyStep(step) {
+  if (!step || !journeyProgress || !journeyVisualTitle || !journeyVisualCopy) return;
+  journeySteps.forEach((card) => card.classList.toggle('is-active', card === step));
+  journeyScenes.forEach((scene) => scene.classList.toggle('is-visible', scene.dataset.scene === step.dataset.journeyStep));
+  journeyProgress.style.setProperty('--journey-progress', `${step.dataset.progress || 33}%`);
+  journeyVisualTitle.textContent = step.dataset.title;
+  journeyVisualCopy.textContent = step.dataset.copy;
+  if (journeyProgressLabel) {
+    journeyProgressLabel.textContent = `${step.dataset.accent} step active`;
+  }
+}
+
+function startJourneyAutoplay() {
+  if (!journeySteps.length) return;
+  let activeIndex = 0;
+  activateJourneyStep(journeySteps[activeIndex]);
+  setInterval(() => {
+    activeIndex = (activeIndex + 1) % journeySteps.length;
+    activateJourneyStep(journeySteps[activeIndex]);
+  }, 2600);
+}
+
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   errorBox.hidden = true;
@@ -188,14 +315,15 @@ form.addEventListener('submit', async (event) => {
     };
     const latestTree = { ...result.tree };
     state.latest = { participant, tree: latestTree };
-    renderDashboard(result.impact);
     state.trees.push(latestTree);
+    renderDashboard(result.impact);
     renderMap(state.trees);
     renderTreeStatus();
     drawCertificate(participant);
     document.querySelector('#certificate-id').textContent = 'Personalized digital tree certificate';
     dialog.showModal();
     form.reset();
+    toggleOtherLocalityField();
   } catch (error) {
     errorBox.textContent = error.message;
     errorBox.hidden = false;
@@ -229,8 +357,13 @@ document.querySelector('#share-certificate').addEventListener('click', async () 
 async function init() {
   try {
     const [config, dashboard, trees] = await Promise.all([api('/api/config'), api('/api/dashboard'), api('/api/trees')]);
-    state.config = config; state.trees = trees.trees;
-    populateForm(); toggleOtherLocalityField(); renderLabels(); renderDashboard(dashboard); renderMap(state.trees); renderTreeStatus();
+    state.config = config;
+    state.trees = trees.trees;
+    clearToast();
+    populateForm();
+    toggleOtherLocalityField();
+    startJourneyAutoplay();
+    renderLabels(); renderDashboard(dashboard); renderMap(state.trees); renderTreeStatus();
   } catch {
     toast('Live impact is temporarily unavailable');
   }

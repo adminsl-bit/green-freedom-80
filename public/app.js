@@ -438,7 +438,9 @@ dialog.addEventListener('click', (event) => { if (event.target === dialog) dialo
 function finishPledgeFlow() {
   dialog.close();
   toast('Thank you for taking the pledge! Your sapling will reach you soon.', 4200);
-  document.querySelector('#top')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  requestAnimationFrame(() => {
+    document.querySelector('#top')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 }
 
 document.querySelector('#download-certificate').addEventListener('click', async () => {

@@ -970,12 +970,14 @@ label small { font-weight: 500; color: var(--muted); }
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 1.2rem;
+  bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px));
+  max-width: min(22rem, calc(100vw - 2rem));
   transform: translateX(-50%) translateY(120%);
-  padding: .8rem 1rem;
+  padding: .8rem 1.1rem;
   border-radius: 999px;
   background: #102a1c;
   color: #fff;
+  text-align: center;
   box-shadow: var(--glow);
   transition: transform .22s ease;
   z-index: 30;

@@ -176,18 +176,50 @@ function toggleOtherLocalityField() {
   if (!showingOther) form.elements.otherLocality.value = '';
 }
 
-function drawCertificate(participant) {
+function loadImage(src) {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = src;
+  });
+}
+
+const CERTIFICATE_LOGO_SOURCES = [
+  '/assets/certificate-logo-yi.png',
+  '/assets/certificate-logo-cii.png',
+  '/assets/certificate-logo-yi-climate-icon.png'
+];
+let certificateAssetsPromise = null;
+
+function loadCertificateAssets() {
+  if (!certificateAssetsPromise) {
+    certificateAssetsPromise = Promise.all([
+      loadImage('/assets/certificate-background.jpg'),
+      ...CERTIFICATE_LOGO_SOURCES.map(loadImage)
+    ]).then(([background, ...logos]) => ({ background, logos }));
+  }
+  return certificateAssetsPromise;
+}
+
+async function drawCertificate(participant) {
   const canvas = document.querySelector('#certificate');
   const context = canvas.getContext('2d');
   const pledge = state.config.pledges.find((item) => item.id === participant.pledgeId);
-  context.fillStyle = '#f7f3e8';
+  const { background, logos } = await loadCertificateAssets();
+  if (background) {
+    const scale = Math.max(canvas.width / background.naturalWidth, canvas.height / background.naturalHeight);
+    const drawWidth = background.naturalWidth * scale;
+    const drawHeight = background.naturalHeight * scale;
+    context.drawImage(background, (canvas.width - drawWidth) / 2, canvas.height - drawHeight, drawWidth, drawHeight);
+  } else {
+    context.fillStyle = '#f7f3e8';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+  }
+  context.fillStyle = 'rgba(247, 243, 232, .86)';
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = '#173f2a';
   context.fillRect(0, 0, 38, canvas.height);
-  context.fillStyle = '#79c56c';
-  context.beginPath(); context.arc(1035, 115, 170, 0, Math.PI * 2); context.fill();
-  context.fillStyle = '#236241';
-  context.beginPath(); context.arc(1115, 220, 120, 0, Math.PI * 2); context.fill();
   context.fillStyle = '#b8ec86';
   context.font = '900 30px system-ui';
   context.fillText('GREEN FREEDOM 80', 90, 92);
@@ -215,9 +247,16 @@ function drawCertificate(participant) {
   context.fillStyle = '#607266';
   context.font = '600 15px system-ui';
   context.fillText('PERSONALIZED DIGITAL TREE CERTIFICATE', 90, 575);
-  context.fillStyle = '#fffdf8';
-  context.font = '900 52px system-ui';
-  context.fillText('80', 1030, 145);
+
+  const logoHeight = 40;
+  const logoGap = 24;
+  let logoRight = 1150;
+  for (const image of [...logos].reverse()) {
+    if (!image) continue;
+    const logoWidth = (image.naturalWidth / image.naturalHeight) * logoHeight;
+    context.drawImage(image, logoRight - logoWidth, 578, logoWidth, logoHeight);
+    logoRight -= logoWidth + logoGap;
+  }
 }
 
 function certificateBlob() {
@@ -272,11 +311,11 @@ function shareableCertificateBlob() {
   return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
 }
 
-function toast(message) {
+function toast(message, duration = 2400) {
   const element = document.querySelector('#toast');
   element.textContent = message;
   element.classList.add('show');
-  setTimeout(() => element.classList.remove('show'), 2400);
+  setTimeout(() => element.classList.remove('show'), duration);
 }
 
 function clearToast() {
@@ -378,7 +417,7 @@ form.addEventListener('submit', async (event) => {
     renderDashboard(result.impact);
     renderMap(state.trees);
     renderTreeStatus();
-    drawCertificate(participant);
+    await drawCertificate(participant);
     document.querySelector('#certificate-id').textContent = 'Personalized digital tree certificate';
     dialog.showModal();
     form.reset();
@@ -396,11 +435,18 @@ form.addEventListener('submit', async (event) => {
 form.elements.localityId.addEventListener('change', toggleOtherLocalityField);
 document.querySelector('.dialog-close').addEventListener('click', () => dialog.close());
 dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+function finishPledgeFlow() {
+  dialog.close();
+  toast('Thank you for taking the pledge! Your sapling will reach you soon.', 4200);
+  document.querySelector('#top')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 document.querySelector('#download-certificate').addEventListener('click', async () => {
   const blob = await certificateBlob();
   const link = document.createElement('a');
   link.download = 'green-freedom-80-certificate.png';
   link.href = URL.createObjectURL(blob); link.click(); URL.revokeObjectURL(link.href);
+  finishPledgeFlow();
 });
 document.querySelector('#share-certificate').addEventListener('click', async () => {
   const blob = await shareableCertificateBlob();
@@ -410,6 +456,7 @@ document.querySelector('#share-certificate').addEventListener('click', async () 
     if (navigator.canShare?.({ files: [file] })) await navigator.share(share);
     else if (navigator.share) await navigator.share({ title: share.title, text: share.text, url: share.url });
     else { await navigator.clipboard.writeText(`${share.text} ${share.url}`); toast('Share message copied'); }
+    finishPledgeFlow();
   } catch (error) { if (error.name !== 'AbortError') toast('Download the certificate to share it'); }
 });
 

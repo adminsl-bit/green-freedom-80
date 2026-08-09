@@ -674,8 +674,14 @@ main { padding: 1.2rem 0 4rem; }
   fill: rgba(35, 98, 65, .16);
   stroke: rgba(35, 98, 65, .38);
 }
-.tree-core { fill: #236241; stroke: rgba(255,255,255,.7); stroke-width: .45; }
-.tree-core.is-latest { fill: #173f2a; }
+.tree-trunk { fill: #8a5a34; }
+.tree-trunk.is-latest { fill: #6b4326; }
+.tree-canopy circle {
+  fill: url(#hotspot-canopy-gradient);
+  stroke: rgba(255,255,255,.7);
+  stroke-width: .25;
+}
+.tree-canopy.is-latest circle { fill: url(#hotspot-canopy-gradient-latest); }
 .tree-badge {
   fill: #fffdf8;
   stroke: rgba(19, 58, 37, .18);

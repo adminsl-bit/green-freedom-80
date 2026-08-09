@@ -47,18 +47,18 @@ function renderMapSummary() {
 
 function renderLabels() {
   const labels = document.querySelector('#locality-labels');
-  const featured = new Set(['anna-nagar', 'teppakulam', 'simmakkal', 'thirunagar', 'mattuthavani', 'avaniyapuram']);
+  const participating = new Set();
   for (const localityId of state.dashboard?.areaParticipation?.map((area) => area.localityId) ?? []) {
-    featured.add(localityId);
+    participating.add(localityId);
   }
   for (const localityId of state.trees.map((tree) => tree.localityId)) {
-    featured.add(localityId);
+    participating.add(localityId);
   }
-  labels.replaceChildren(...state.config.localities.filter((place) => featured.has(place.id)).map((place) => {
+  labels.replaceChildren(...state.config.localities.filter((place) => participating.has(place.id)).map((place) => {
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     text.setAttribute('class', 'locality-label');
-    text.setAttribute('x', place.x);
-    text.setAttribute('y', place.y - 4.2);
+    text.setAttribute('x', place.x + 4.6);
+    text.setAttribute('y', place.y + 1.1);
     text.textContent = place.name;
     return text;
   }));
@@ -75,10 +75,29 @@ function buildHotspotNode(tree, activeCount, isLatest = false) {
   glow.setAttribute('r', String(Math.min(7.6, 2.6 + activeCount * 0.45)));
   group.appendChild(glow);
 
-  const core = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  core.setAttribute('class', `tree-core${isLatest ? ' is-latest' : ''}`);
-  core.setAttribute('r', String(Math.min(3.4, 1.45 + activeCount * 0.14)));
-  group.appendChild(core);
+  const radius = Math.min(3.4, 1.45 + activeCount * 0.14);
+  const trunk = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  trunk.setAttribute('class', `tree-trunk${isLatest ? ' is-latest' : ''}`);
+  trunk.setAttribute('x', String(-radius * 0.13));
+  trunk.setAttribute('y', String(radius * 0.25));
+  trunk.setAttribute('width', String(radius * 0.26));
+  trunk.setAttribute('height', String(radius * 0.6));
+  group.appendChild(trunk);
+
+  const canopy = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  canopy.setAttribute('class', `tree-canopy${isLatest ? ' is-latest' : ''}`);
+  for (const leaf of [
+    { cx: 0, cy: -radius * 0.15, r: radius * 0.72 },
+    { cx: -radius * 0.5, cy: radius * 0.05, r: radius * 0.55 },
+    { cx: radius * 0.5, cy: radius * 0.05, r: radius * 0.55 }
+  ]) {
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', String(leaf.cx));
+    circle.setAttribute('cy', String(leaf.cy));
+    circle.setAttribute('r', String(leaf.r));
+    canopy.appendChild(circle);
+  }
+  group.appendChild(canopy);
 
   const badge = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
   badge.setAttribute('class', 'tree-badge');

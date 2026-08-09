@@ -224,6 +224,54 @@ function certificateBlob() {
   return new Promise((resolve) => document.querySelector('#certificate').toBlob(resolve, 'image/png'));
 }
 
+function shareableCertificateBlob() {
+  const source = document.querySelector('#certificate');
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080;
+  canvas.height = 1920;
+  const context = canvas.getContext('2d');
+  context.fillStyle = '#173f2a';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = '#79c56c';
+  context.beginPath(); context.arc(120, 160, 220, 0, Math.PI * 2); context.fill();
+  context.fillStyle = '#236241';
+  context.beginPath(); context.arc(960, 1780, 260, 0, Math.PI * 2); context.fill();
+
+  const cardWidth = canvas.width - 160;
+  const cardHeight = cardWidth * (source.height / source.width);
+  const cardX = (canvas.width - cardWidth) / 2;
+  const cardY = (canvas.height - cardHeight) / 2;
+  const radius = 32;
+
+  context.save();
+  context.shadowColor = 'rgba(0, 0, 0, .35)';
+  context.shadowBlur = 60;
+  context.shadowOffsetY = 24;
+  context.beginPath();
+  context.roundRect(cardX, cardY, cardWidth, cardHeight, radius);
+  context.fillStyle = '#fffdf8';
+  context.fill();
+  context.restore();
+
+  context.save();
+  context.beginPath();
+  context.roundRect(cardX, cardY, cardWidth, cardHeight, radius);
+  context.clip();
+  context.drawImage(source, cardX, cardY, cardWidth, cardHeight);
+  context.restore();
+
+  context.textAlign = 'center';
+  context.fillStyle = '#b8ec86';
+  context.font = '900 46px system-ui';
+  context.fillText('GREEN FREEDOM 80', canvas.width / 2, cardY - 70);
+  context.fillStyle = '#eafccb';
+  context.font = '600 32px system-ui';
+  context.fillText('Join the pledge for a greener Madurai', canvas.width / 2, cardY + cardHeight + 80);
+  context.textAlign = 'left';
+
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+}
+
 function toast(message) {
   const element = document.querySelector('#toast');
   element.textContent = message;
@@ -355,7 +403,7 @@ document.querySelector('#download-certificate').addEventListener('click', async 
   link.href = URL.createObjectURL(blob); link.click(); URL.revokeObjectURL(link.href);
 });
 document.querySelector('#share-certificate').addEventListener('click', async () => {
-  const blob = await certificateBlob();
+  const blob = await shareableCertificateBlob();
   const file = new File([blob], 'green-freedom-80-certificate.png', { type: 'image/png' });
   const share = { title: 'Green Freedom 80', text: 'I pledged for a Greener Madurai under Green Freedom 80. Join me and let’s make Madurai greener together.', url: location.origin, files: [file] };
   try {

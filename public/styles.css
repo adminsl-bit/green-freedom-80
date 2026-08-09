@@ -865,7 +865,10 @@ label small { font-weight: 500; color: var(--muted); }
   display: flex;
   flex-direction: column;
   gap: .75rem;
-  padding: 1.1rem 0 1.3rem;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 1.1rem clamp(1.25rem, 4vw, 3.5rem) 1.3rem;
 }
 .footer-row {
   display: flex;
@@ -889,7 +892,7 @@ label small { font-weight: 500; color: var(--muted); }
 }
 .footer-powered-logo {
   display: block;
-  max-height: 52px;
+  max-height: 76px;
   width: auto;
   object-fit: contain;
 }

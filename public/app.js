@@ -215,7 +215,7 @@ function drawCertificate(participant) {
   context.fillStyle = '#607266';
   context.font = '600 15px system-ui';
   context.fillText('PERSONALIZED DIGITAL TREE CERTIFICATE', 90, 575);
-  context.fillStyle = '#173f2a';
+  context.fillStyle = '#fffdf8';
   context.font = '900 52px system-ui';
   context.fillText('80', 1030, 145);
 }

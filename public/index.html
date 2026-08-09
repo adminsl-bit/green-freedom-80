@@ -11,18 +11,20 @@
 </head>
 <body>
   <a class="skip-link" href="#pledge">Skip to pledge form</a>
-  <header class="site-header page-shell">
-    <a class="brand" href="#top" aria-label="Green Freedom 80 home">
-      <span class="brand-mark" aria-hidden="true">80</span>
-      <span><strong>Green Freedom</strong><small>Young Indians · Madurai climate action</small></span>
-    </a>
-    <nav class="header-nav" aria-label="Primary">
-      <a href="#forest">Digital map</a>
-      <a href="#pledge">Take my pledge</a>
-      <a href="/terms.html">Terms</a>
-      <a href="/privacy.html">Privacy</a>
-    </nav>
-    <a class="header-cta" href="#pledge">Take my pledge</a>
+  <header class="site-header">
+    <div class="header-inner page-shell">
+      <a class="brand" href="#top" aria-label="Green Freedom 80 home">
+        <span class="brand-mark" aria-hidden="true">80</span>
+        <span><strong>Green Freedom</strong><small>Young Indians · Madurai climate action</small></span>
+      </a>
+      <nav class="header-nav" aria-label="Primary">
+        <a href="#forest">Digital map</a>
+        <a href="#pledge">Take my pledge</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/privacy.html">Privacy</a>
+      </nav>
+      <a class="header-cta" href="#pledge">Take my pledge</a>
+    </div>
   </header>
 
   <main id="top" class="page-shell">
@@ -36,7 +38,7 @@
           <a class="button button-secondary" href="#forest">See the digital map</a>
         </div>
         <div class="hero-notes">
-          <p class="trust-line"><span aria-hidden="true">✓</span> Free to join · One pledge per mobile number · Details stored in the campaign Sheet</p>
+          <p class="trust-line"><span aria-hidden="true">✓</span> Free to join · One pledge per mobile number</p>
           <p class="delivery-note"><strong>Sapling delivery intent:</strong> Young Indians will deliver a tree sapling to your home after your digital pledge, and you are expected to nurture and care for the sapling.</p>
         </div>
       </div>
@@ -45,10 +47,40 @@
           <span class="hero-panel-kicker">Growing impact</span>
           <div class="hero-growth">
             <div class="hero-growth-sun"></div>
-            <div class="hero-growth-pot"></div>
-            <div class="hero-growth-stem"></div>
+            <div class="hero-growth-water"></div>
+            <div class="hero-growth-splash"></div>
             <div class="hero-growth-tree">
-              <i></i><i></i><i></i>
+              <svg viewBox="0 0 240 340" width="240" height="340" role="presentation" focusable="false">
+                <defs>
+                  <path id="heroLeafShape" d="M0,-15 C6,-10 7,-3 0,9 C-7,-3 -6,-10 0,-15 Z" />
+                  <linearGradient id="heroTrunkGradient" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#5f3d22" />
+                    <stop offset="55%" stop-color="#8a5a34" />
+                    <stop offset="100%" stop-color="#6b4326" />
+                  </linearGradient>
+                </defs>
+                <ellipse class="hero-tree-shadow" cx="120" cy="332" rx="74" ry="11" />
+                <g class="hero-tree-grass">
+                  <path d="M78,336 C76,318 80,304 86,294" />
+                  <path d="M90,338 C90,320 96,306 104,296" />
+                  <path d="M150,338 C150,320 145,306 138,296" />
+                  <path d="M162,336 C164,318 160,304 154,294" />
+                  <path d="M100,340 C102,326 108,314 116,306" />
+                  <path d="M140,340 C138,326 132,314 124,306" />
+                </g>
+                <g class="hero-tree-rocks">
+                  <ellipse cx="80" cy="337" rx="14" ry="8" />
+                  <ellipse cx="106" cy="341" rx="11" ry="6.5" />
+                  <ellipse cx="160" cy="336" rx="16" ry="9" />
+                  <ellipse cx="136" cy="341" rx="10" ry="6" />
+                </g>
+                <g class="hero-tree-trunk">
+                  <path class="hero-trunk-branch" d="M113,206 C93,196 74,180 57,158" />
+                  <path class="hero-trunk-branch" d="M127,200 C148,188 168,172 183,150" />
+                  <path class="hero-trunk-main" d="M109,336 C107,298 111,258 113,222 C114,202 116,186 118,170 L122,170 C124,186 126,202 127,222 C129,258 133,298 131,336 Z" />
+                </g>
+                <g class="hero-tree-canopy" id="hero-canopy-leaves"></g>
+              </svg>
             </div>
           </div>
           <p class="hero-growth-copy">From a single digital pledge to a living tree in Madurai.</p>
@@ -74,21 +106,21 @@
       </div>
       <div class="journey-grid">
         <div class="journey-steps" aria-label="Campaign journey steps">
-          <article class="journey-step-card is-active" data-journey-step="register" data-title="Register your pledge" data-copy="Choose your Madurai locality, submit your details, and place your area on the digital climate map." data-accent="Register" data-progress="33">
+          <article class="journey-step-card is-active" data-journey-step="register" data-title="Register your pledge" data-copy="Choose your Madurai locality, submit your details, and place your area on the digital climate map." data-accent="Register" role="button" tabindex="0" aria-pressed="true">
             <span class="journey-step-number">01</span>
             <div class="stack-sm">
               <h3>Register your pledge</h3>
               <p>Participants choose their locality, share delivery details, and make a digital commitment for a greener Madurai.</p>
             </div>
           </article>
-          <article class="journey-step-card" data-journey-step="delivery" data-title="Sapling reaches home" data-copy="After the digital pledge, Young Indians coordinates sapling delivery to the participant’s home." data-accent="Delivery" data-progress="66">
+          <article class="journey-step-card" data-journey-step="delivery" data-title="Sapling reaches home" data-copy="After the digital pledge, Young Indians coordinates sapling delivery to the participant’s home." data-accent="Delivery" role="button" tabindex="0" aria-pressed="false">
             <span class="journey-step-number">02</span>
             <div class="stack-sm">
               <h3>Sapling reaches home</h3>
               <p>The campaign moves from digital intent to physical action when Young Indians delivers the tree sapling.</p>
             </div>
           </article>
-          <article class="journey-step-card" data-journey-step="nurture" data-title="Nurture the tree" data-copy="The long-term impact comes from planting, watering, protecting, and caring for the sapling after delivery." data-accent="Nurture" data-progress="100">
+          <article class="journey-step-card" data-journey-step="nurture" data-title="Nurture the tree" data-copy="The long-term impact comes from planting, watering, protecting, and caring for the sapling after delivery." data-accent="Nurture" role="button" tabindex="0" aria-pressed="false">
             <span class="journey-step-number">03</span>
             <div class="stack-sm">
               <h3>Nurture the tree</h3>
@@ -98,24 +130,88 @@
         </div>
         <aside class="journey-visual" aria-live="polite">
           <div class="journey-visual-card">
-            <p class="journey-kicker" id="journey-progress-label">Journey auto-playing</p>
-            <div class="journey-progress-track"><span id="journey-progress"></span></div>
+            <p class="journey-kicker" id="journey-progress-label">Register step active</p>
             <div class="journey-scene journey-scene-register is-visible" data-scene="register">
               <div class="journey-scene-badge">Register</div>
-              <div class="journey-scene-phone">
-                <span></span><span></span><span></span>
-              </div>
+              <svg class="journey-scene-art" viewBox="0 0 180 200" width="180" height="200" role="presentation" focusable="false">
+                <defs>
+                  <linearGradient id="sceneScreenGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#f3f8ee" />
+                    <stop offset="100%" stop-color="#e4f0da" />
+                  </linearGradient>
+                </defs>
+                <rect x="18" y="6" width="144" height="188" rx="30" fill="#ffffff" stroke="rgba(19,58,37,.14)" stroke-width="2" />
+                <rect x="32" y="22" width="116" height="150" rx="16" fill="url(#sceneScreenGradient)" />
+                <path d="M90,46 C100,46 108,54 108,64 C108,78 90,98 90,98 C90,98 72,78 72,64 C72,54 80,46 90,46 Z" fill="#79c56c" />
+                <circle cx="90" cy="64" r="9" fill="#f3f8ee" />
+                <rect x="52" y="112" width="76" height="9" rx="4.5" fill="rgba(19,58,37,.16)" />
+                <rect x="52" y="128" width="58" height="9" rx="4.5" fill="rgba(19,58,37,.12)" />
+                <rect x="52" y="144" width="66" height="9" rx="4.5" fill="rgba(19,58,37,.12)" />
+                <circle cx="140" cy="164" r="22" fill="#236241" />
+                <path d="M130,164 L137,171 L151,155" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
             </div>
             <div class="journey-scene journey-scene-delivery" data-scene="delivery">
               <div class="journey-scene-badge">Delivery</div>
-              <div class="journey-scene-route"></div>
-              <div class="journey-scene-sapling"></div>
+              <svg class="journey-scene-art" viewBox="0 0 220 180" width="220" height="180" role="presentation" focusable="false">
+                <path d="M26,142 C68,84 148,84 190,42" fill="none" stroke="rgba(35,98,65,.3)" stroke-width="3" stroke-dasharray="2 11" stroke-linecap="round" />
+                <circle cx="26" cy="142" r="7" fill="#236241" />
+                <g transform="translate(176,22)">
+                  <path d="M0,36 L18,36 L18,15 L9,2 L0,15 Z" fill="#8a5a34" />
+                  <rect x="-5" y="36" width="28" height="6" rx="2" fill="#6b4326" />
+                  <rect x="4.5" y="21" width="9" height="15" fill="#f3f8ee" />
+                </g>
+                <g transform="translate(94,88)">
+                  <ellipse cx="0" cy="40" rx="30" ry="6" fill="rgba(19,58,37,.12)" />
+                  <path d="M-24,16 L24,16 L20,38 L-20,38 Z" fill="#c88757" />
+                  <rect x="-24" y="10" width="48" height="9" rx="4" fill="#d9a06c" />
+                  <path d="M0,10 C-15,10 -19,-6 -10,-22 C-4,-31 4,-31 10,-22 C19,-6 15,10 0,10 Z" fill="#79c56c" />
+                  <path d="M0,-4 C-8,-4 -12,-15 -7,-26" fill="none" stroke="#236241" stroke-width="3" stroke-linecap="round" />
+                </g>
+              </svg>
             </div>
             <div class="journey-scene journey-scene-nurture" data-scene="nurture">
               <div class="journey-scene-badge">Nurture</div>
-              <div class="journey-scene-tree">
-                <i></i><i></i><i></i>
-              </div>
+              <svg class="journey-scene-art" viewBox="0 0 200 200" width="200" height="200" role="presentation" focusable="false">
+                <defs>
+                  <path id="sceneLeaf" d="M0,-11 C4.4,-7.6 5.2,-2.4 0,6.4 C-5.2,-2.4 -4.4,-7.6 0,-11 Z" />
+                  <linearGradient id="sceneTrunkGradient" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#5f3d22" />
+                    <stop offset="55%" stop-color="#8a5a34" />
+                    <stop offset="100%" stop-color="#6b4326" />
+                  </linearGradient>
+                </defs>
+                <ellipse cx="100" cy="176" rx="46" ry="8" fill="rgba(19,58,37,.12)" />
+                <path d="M92,176 C90,150 93,124 96,104 L104,104 C107,124 110,150 108,176 Z" fill="url(#sceneTrunkGradient)" />
+                <g>
+                  <use href="#sceneLeaf" fill="#2f7a4a" transform="translate(76,50) rotate(10) scale(1.6)" />
+                  <use href="#sceneLeaf" fill="#3f8a52" transform="translate(100,38) rotate(-8) scale(1.8)" />
+                  <use href="#sceneLeaf" fill="#2f7a4a" transform="translate(124,50) rotate(15) scale(1.6)" />
+                  <use href="#sceneLeaf" fill="#5aa752" transform="translate(64,66) rotate(-12) scale(1.5)" />
+                  <use href="#sceneLeaf" fill="#3f8a52" transform="translate(88,60) rotate(20) scale(1.7)" />
+                  <use href="#sceneLeaf" fill="#5aa752" transform="translate(112,58) rotate(-16) scale(1.7)" />
+                  <use href="#sceneLeaf" fill="#2f7a4a" transform="translate(136,66) rotate(8) scale(1.5)" />
+                  <use href="#sceneLeaf" fill="#3f8a52" transform="translate(76,80) rotate(-10) scale(1.5)" />
+                  <use href="#sceneLeaf" fill="#5aa752" transform="translate(100,86) rotate(14) scale(1.6)" />
+                  <use href="#sceneLeaf" fill="#3f8a52" transform="translate(124,80) rotate(-6) scale(1.5)" />
+                  <use href="#sceneLeaf" fill="#2f7a4a" transform="translate(58,84) rotate(18) scale(1.3)" />
+                  <use href="#sceneLeaf" fill="#2f7a4a" transform="translate(142,84) rotate(-18) scale(1.3)" />
+                  <use href="#sceneLeaf" fill="#5aa752" transform="translate(100,64) scale(2)" />
+                  <use href="#sceneLeaf" fill="#5aa752" transform="translate(70,36) rotate(-5) scale(1.3)" />
+                  <use href="#sceneLeaf" fill="#5aa752" transform="translate(130,36) rotate(8) scale(1.3)" />
+                  <use href="#sceneLeaf" fill="#3f8a52" transform="translate(100,20) scale(1.2)" />
+                </g>
+                <g transform="translate(150,42) rotate(20)">
+                  <path d="M18,10 L34,2" stroke="#236241" stroke-width="6" stroke-linecap="round" />
+                  <ellipse cx="0" cy="14" rx="17" ry="12" fill="#236241" />
+                  <path d="M-8,2 C-4,-6 4,-6 8,2" fill="none" stroke="#236241" stroke-width="5" stroke-linecap="round" />
+                </g>
+                <g fill="#7fc8f8" opacity=".85">
+                  <circle cx="188" cy="52" r="2.6" />
+                  <circle cx="181" cy="61" r="2.1" />
+                  <circle cx="191" cy="66" r="1.8" />
+                </g>
+              </svg>
             </div>
             <h3 id="journey-visual-title">Register your pledge</h3>
             <p id="journey-visual-copy">Choose your Madurai locality, submit your details, and place your area on the digital climate map.</p>
@@ -156,18 +252,6 @@
             <p id="tree-status" class="tree-status">Choose your locality and take the pledge to see your latest tree on the map.</p>
           </div>
         </div>
-        <aside class="leaderboard-card stack-md" aria-labelledby="leaderboard-title">
-          <div>
-            <p class="eyebrow">Community leaderboard</p>
-            <h3 id="leaderboard-title">Top participating localities</h3>
-          </div>
-          <ol id="leaderboard"><li class="empty-state">The first locality is waiting to grow.</li></ol>
-          <div>
-            <h4 class="subheading">Fastest-growing hotspots</h4>
-            <ul id="participation-hotspots" class="hotspot-list"><li class="empty-state">New hotspots appear here as registrations come in.</li></ul>
-          </div>
-          <a href="#pledge" class="button button-dark">Put your area on the map <span>→</span></a>
-        </aside>
       </div>
     </section>
 
@@ -190,7 +274,6 @@
         <label><span>Address details</span><textarea name="addressDetail" autocomplete="street-address" required minlength="5" maxlength="220" rows="3" placeholder="House / street / landmark / postcode"></textarea><small>Enter enough detail for Young Indians to administer the campaign and arrange sapling delivery.</small></label>
         <div class="fixed-pledge" aria-label="Selected climate action"><b aria-hidden="true">🌱</b><span><strong>Climate action</strong>I pledge to plant, nurture, and take care of one tree sapling delivered through this campaign.</span></div>
         <label class="consent"><input type="checkbox" name="consent" required><span>I consent to Young Indians storing my name, mobile number, address, locality for this campaign.</span></label>
-        <p class="sheet-disclosure">Anyone who obtains the campaign Google Sheet link can view submitted details. Do not use this form for confidential information.</p>
         <p class="form-note">Young Indians will deliver a tree sapling to your home after your digital pledge, and you are expected to nurture and care for the sapling.</p>
         <p id="form-error" class="form-error" role="alert" hidden></p>
         <button class="button button-primary submit-button" type="submit">Take My Pledge <span aria-hidden="true">→</span></button>
@@ -200,18 +283,24 @@
 
   <footer class="site-footer">
     <div class="page-shell footer-shell">
-      <div class="footer-logos" aria-label="Campaign and partner logos">
-        <img src="/assets/logo-strawlabs.png" alt="Straw Labs logo">
-        <img src="/assets/logo-cii.png" alt="Confederation of Indian Industry logo">
-        <img src="/assets/logo-yi.png" alt="Young Indians logo">
-        <img src="/assets/logo-yi-climate.png" alt="Yi Climate Change logo">
+      <div class="footer-row footer-brand-row">
+        <div class="footer-powered-group">
+          <span class="footer-powered">Powered by</span>
+          <img src="/assets/logo-strawlabs.png" alt="Straw Labs logo" class="footer-powered-logo">
+        </div>
+        <div class="footer-logos" aria-label="Partner logos">
+          <img src="/assets/logo-cii.png" alt="Confederation of Indian Industry logo">
+          <img src="/assets/logo-yi.png" alt="Young Indians logo">
+          <img src="/assets/logo-yi-climate.png" alt="Yi Climate Change logo">
+        </div>
       </div>
-      <p class="footer-powered">Powered by StrawLabs</p>
-      <nav class="footer-links" aria-label="Footer links">
-        <a href="/terms.html">Terms &amp; Conditions</a>
-        <a href="/privacy.html">Privacy Policy</a>
-      </nav>
-      <p class="footer-copyright">© 2026 Green Freedom 80</p>
+      <div class="footer-row footer-meta-row">
+        <p class="footer-copyright">© 2026 Green Freedom 80</p>
+        <nav class="footer-links" aria-label="Footer links">
+          <a href="/terms.html">Terms &amp; Conditions</a>
+          <a href="/privacy.html">Privacy Policy</a>
+        </nav>
+      </div>
     </div>
   </footer>
 

@@ -5,7 +5,6 @@ const dialog = document.querySelector('#success-dialog');
 const treeStatus = document.querySelector('#tree-status');
 const otherLocalityField = document.querySelector('#other-locality-field');
 const journeySteps = [...document.querySelectorAll('[data-journey-step]')];
-const journeyProgress = document.querySelector('#journey-progress');
 const journeyVisualTitle = document.querySelector('#journey-visual-title');
 const journeyVisualCopy = document.querySelector('#journey-visual-copy');
 const journeyProgressLabel = document.querySelector('#journey-progress-label');
@@ -44,24 +43,6 @@ function renderMapSummary() {
   }
   const top = hotspots[0];
   summary.textContent = `${hotspots.length} active localities are visible right now. ${top.locality.name} currently leads with ${top.count} digital ${top.count === 1 ? 'tree' : 'trees'}.`;
-}
-
-function renderParticipationHotspots() {
-  const list = document.querySelector('#participation-hotspots');
-  if (!list) return;
-  const hotspots = summarizeActiveLocalities().slice(0, 5);
-  if (!hotspots.length) {
-    list.innerHTML = '<li class="empty-state">New hotspots appear here as registrations come in.</li>';
-    return;
-  }
-  list.replaceChildren(...hotspots.map((entry, index) => {
-    const item = document.createElement('li');
-    item.innerHTML = `<span class="hotspot-rank">${index + 1}</span><span class="hotspot-copy"><strong></strong><small></small></span><span class="hotspot-count"></span>`;
-    item.querySelector('strong').textContent = entry.locality.name;
-    item.querySelector('small').textContent = entry.count === 1 ? '1 digital tree visible here' : `${entry.count} digital trees visible here`;
-    item.querySelector('.hotspot-count').textContent = `${entry.count}×`;
-    return item;
-  }));
 }
 
 function renderLabels() {
@@ -159,21 +140,7 @@ function renderDashboard(dashboard) {
   document.querySelector('#total-trees').textContent = dashboard.totalDigitalTrees.toLocaleString('en-IN');
   document.querySelector('#active-areas').textContent = dashboard.areaParticipation.length.toLocaleString('en-IN');
   document.querySelector('#top-area').textContent = dashboard.topLocalities[0]?.locality ?? 'Be first';
-  const list = document.querySelector('#leaderboard');
-  if (!dashboard.topLocalities.length) {
-    list.innerHTML = '<li class="empty-state">The first locality is waiting to grow.</li>';
-    renderMapSummary();
-    renderParticipationHotspots();
-    return;
-  }
-  list.replaceChildren(...dashboard.topLocalities.map((area, index) => {
-    const item = document.createElement('li');
-    item.innerHTML = `<span class="rank">${index + 1}</span><strong></strong><span class="area-count">${area.count}</span>`;
-    item.querySelector('strong').textContent = area.locality;
-    return item;
-  }));
   renderMapSummary();
-  renderParticipationHotspots();
 }
 
 function populateForm() {
@@ -252,10 +219,13 @@ function clearToast() {
 }
 
 function activateJourneyStep(step) {
-  if (!step || !journeyProgress || !journeyVisualTitle || !journeyVisualCopy) return;
-  journeySteps.forEach((card) => card.classList.toggle('is-active', card === step));
+  if (!step || !journeyVisualTitle || !journeyVisualCopy) return;
+  journeySteps.forEach((card) => {
+    const isActive = card === step;
+    card.classList.toggle('is-active', isActive);
+    card.setAttribute('aria-pressed', String(isActive));
+  });
   journeyScenes.forEach((scene) => scene.classList.toggle('is-visible', scene.dataset.scene === step.dataset.journeyStep));
-  journeyProgress.style.setProperty('--journey-progress', `${step.dataset.progress || 33}%`);
   journeyVisualTitle.textContent = step.dataset.title;
   journeyVisualCopy.textContent = step.dataset.copy;
   if (journeyProgressLabel) {
@@ -263,14 +233,36 @@ function activateJourneyStep(step) {
   }
 }
 
-function startJourneyAutoplay() {
+let journeyAutoplayTimer = null;
+const JOURNEY_AUTOPLAY_INTERVAL = 3200;
+
+function restartJourneyAutoplay() {
   if (!journeySteps.length) return;
-  let activeIndex = 0;
-  activateJourneyStep(journeySteps[activeIndex]);
-  setInterval(() => {
-    activeIndex = (activeIndex + 1) % journeySteps.length;
-    activateJourneyStep(journeySteps[activeIndex]);
-  }, 2600);
+  clearInterval(journeyAutoplayTimer);
+  journeyAutoplayTimer = setInterval(() => {
+    const currentIndex = journeySteps.findIndex((card) => card.classList.contains('is-active'));
+    const nextIndex = (currentIndex + 1) % journeySteps.length;
+    activateJourneyStep(journeySteps[nextIndex]);
+  }, JOURNEY_AUTOPLAY_INTERVAL);
+}
+
+function selectJourneyStep(card) {
+  activateJourneyStep(card);
+  restartJourneyAutoplay();
+}
+
+function initJourneySteps() {
+  if (!journeySteps.length) return;
+  journeySteps.forEach((card) => {
+    card.addEventListener('click', () => selectJourneyStep(card));
+    card.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      selectJourneyStep(card);
+    });
+  });
+  activateJourneyStep(journeySteps.find((card) => card.classList.contains('is-active')) || journeySteps[0]);
+  restartJourneyAutoplay();
 }
 
 form.addEventListener('submit', async (event) => {
@@ -354,6 +346,47 @@ document.querySelector('#share-certificate').addEventListener('click', async () 
   } catch (error) { if (error.name !== 'AbortError') toast('Download the certificate to share it'); }
 });
 
+function seededRandom(seed) {
+  let value = seed;
+  return () => {
+    value = (value * 9301 + 49297) % 233280;
+    return value / 233280;
+  };
+}
+
+function buildHeroCanopy() {
+  const group = document.querySelector('#hero-canopy-leaves');
+  if (!group) return;
+  const rand = seededRandom(42);
+  const palette = ['#123322', '#1c4a2e', '#236241', '#2f7a4a', '#3f8a52', '#5aa752', '#79c56c'];
+  const centerX = 120, centerY = 92, radiusX = 114, radiusY = 98;
+  const leaves = [];
+  for (let i = 0; i < 260; i += 1) {
+    const angle = rand() * Math.PI * 2;
+    const spread = Math.sqrt(rand());
+    const x = centerX + Math.cos(angle) * radiusX * spread;
+    const y = centerY + Math.sin(angle) * radiusY * spread;
+    const sunBias = Math.max(0, Math.min(1, ((x - centerX) / radiusX + (centerY - y) / radiusY) / 2 + .5));
+    const colorIndex = Math.min(palette.length - 1, Math.max(0, Math.round(sunBias * (palette.length - 1) + (rand() - .5) * 2)));
+    leaves.push({
+      x, y,
+      rotation: Math.round(rand() * 360),
+      scale: (0.55 + rand() * 0.65).toFixed(2),
+      color: palette[colorIndex],
+      delay: (rand() * 0.9).toFixed(2)
+    });
+  }
+  group.replaceChildren(...leaves.map(({ x, y, rotation, scale, color, delay }) => {
+    const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    use.setAttribute('href', '#heroLeafShape');
+    use.setAttribute('fill', color);
+    use.setAttribute('class', 'hero-leaf');
+    use.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${rotation}) scale(${scale})`);
+    use.style.setProperty('--leaf-delay', `${delay}s`);
+    return use;
+  }));
+}
+
 async function init() {
   try {
     const [config, dashboard, trees] = await Promise.all([api('/api/config'), api('/api/dashboard'), api('/api/trees')]);
@@ -362,11 +395,12 @@ async function init() {
     clearToast();
     populateForm();
     toggleOtherLocalityField();
-    startJourneyAutoplay();
     renderLabels(); renderDashboard(dashboard); renderMap(state.trees); renderTreeStatus();
   } catch {
     toast('Live impact is temporarily unavailable');
   }
 }
 
+buildHeroCanopy();
+initJourneySteps();
 init();

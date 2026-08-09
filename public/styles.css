@@ -889,7 +889,7 @@ label small { font-weight: 500; color: var(--muted); }
 }
 .footer-powered-logo {
   display: block;
-  max-height: 32px;
+  max-height: 52px;
   width: auto;
   object-fit: contain;
 }
@@ -1005,11 +1005,13 @@ label small { font-weight: 500; color: var(--muted); }
 @media (max-width: 1080px) {
   .hero,
   .forest-grid,
+  .journey-grid,
   .pledge-section,
   .legal-page-grid {
     grid-template-columns: 1fr;
   }
-  .pledge-intro {
+  .pledge-intro,
+  .journey-visual {
     position: static;
   }
 }
@@ -1058,5 +1060,14 @@ label small { font-weight: 500; color: var(--muted); }
   }
   .dialog-actions {
     flex-direction: column;
+  }
+  .footer-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .footer-logos,
+  .footer-links {
+    justify-content: flex-start;
+    width: 100%;
   }
 }

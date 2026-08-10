@@ -952,7 +952,7 @@ label small { font-weight: 500; color: var(--muted); }
   font-size: .78rem;
   font-weight: 800;
 }
-.success-dialog h2 { margin: 0 0 1rem; font-size: clamp(2rem, 4vw, 3rem); line-height: .98; }
+.success-dialog h2 { margin: 0 0 1rem; font-size: clamp(1.4rem, 2.6vw, 1.9rem); line-height: 1.2; letter-spacing: -.01em; }
 .success-dialog h2 em { color: var(--forest); font-style: normal; }
 #certificate {
   width: 100%;

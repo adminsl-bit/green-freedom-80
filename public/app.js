@@ -419,6 +419,7 @@ form.addEventListener('submit', async (event) => {
     renderTreeStatus();
     await drawCertificate(participant);
     document.querySelector('#certificate-id').textContent = 'Personalized digital tree certificate';
+    pledgeFlowCompleted = false;
     dialog.showModal();
     form.reset();
     toggleOtherLocalityField();
@@ -433,13 +434,16 @@ form.addEventListener('submit', async (event) => {
 });
 
 form.elements.localityId.addEventListener('change', toggleOtherLocalityField);
-document.querySelector('.dialog-close').addEventListener('click', () => dialog.close());
-dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+document.querySelector('.dialog-close').addEventListener('click', () => finishPledgeFlow());
+dialog.addEventListener('click', (event) => { if (event.target === dialog) finishPledgeFlow(); });
+let pledgeFlowCompleted = false;
 function finishPledgeFlow() {
+  if (pledgeFlowCompleted) return;
+  pledgeFlowCompleted = true;
   dialog.close();
   toast('Thank you for taking the pledge! Your sapling will reach you soon.', 4200);
   requestAnimationFrame(() => {
-    document.querySelector('#top')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelector('#forest')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 }
 
